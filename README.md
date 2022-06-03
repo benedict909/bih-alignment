@@ -10,8 +10,22 @@ The main scripts are found in `/scripts`:
 
 The scripts in `/exec` are called by the other scripts and should not be executed in isolation.  
 
+## Installation
+
 You can download these scripts like so:
 
 ```
 git clone https://github.com/benedict909/bih-alignment
 ```
+
+## Configuration
+
+The following parameters need setting in the global options section in `scripts/alignment_scripts.sh` at the start of each new project:
+
+* `project_name`: the name of the folder in `//fast/groups/ag_sanders/work/data` containig the reads (which should contain a dir named fastq/)
+
+* `memperthread` the memory assigned per thread in slurm job (recommended 2-4G)
+
+* `mate1_suffix`: the suffix of read pair mate 1 fastq file (e.g. `_1_sequence.txt.gz`)
+
+* `run_qc`: whether the alignment QC script should be run automatically after alignment is complete [TRUE/FALSE] (default = TRUE)
