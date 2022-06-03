@@ -29,7 +29,7 @@ conda env create -f //fast/groups/ag_sanders/work/tools/conda_envs/alignmentenv_
 
 The following parameters need setting in the global options section in `scripts/alignment_scripts.sh` at the start of each new project:
 
-* `project_name`: the name of the folder in `//fast/groups/ag_sanders/work/data` containig the reads (which should contain a dir named fastq/)
+* `project_name`: the name of the folder in `//fast/groups/ag_sanders/work/data` containing the reads (which should contain a dir named fastq/)
 
 * `memperthread` the memory assigned per thread in slurm job (recommended 2-4G)
 
