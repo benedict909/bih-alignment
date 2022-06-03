@@ -18,6 +18,12 @@ You can download these scripts like so:
 git clone https://github.com/benedict909/bih-alignment
 ```
 
+And install the required conda environment like so:
+
+```
+conda env create -f //fast/groups/ag_sanders/work/tools/conda_envs/alignmentenv_20220505.yml
+```
+
 ## Configuration
 
 The following parameters need setting in the global options section in `scripts/alignment_scripts.sh` at the start of each new project:

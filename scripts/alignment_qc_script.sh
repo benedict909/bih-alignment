@@ -42,6 +42,6 @@ then
 fi
 
 # run script
-echo "launching QC script //fast/groups/ag_sanders/work/projects/benedict/master_scripts/alignment/alignment_qc_exec.sh"
-bash //fast/groups/ag_sanders/work/projects/benedict/master_scripts/alignment/alignment_qc_exec.sh \
+echo "launching QC script //fast/groups/ag_sanders/work/projects/benedict/master_scripts/alignment/exec/alignment_qc_exec.sh"
+bash //fast/groups/ag_sanders/work/projects/benedict/master_scripts/alignment/exec/alignment_qc_exec.sh \
 	$project_name
