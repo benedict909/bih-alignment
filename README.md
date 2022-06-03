@@ -1,7 +1,7 @@
 # bih-alignment
 
 Scripts for performing alignment of NGS reads to a reference genome on the BIH HPC cluster. 
-The pipeline takes the input fastq files in the following location on the BIH cluster: `//fast/groups/ag_sanders/work/data/${project_name}/fastq`, where ${project_name} is the name of the sequencing run *and* directory.
+The pipeline takes the input fastq files in the following location on the BIH cluster: `//fast/groups/ag_sanders/work/data/${project_name}/fastq`, where `${project_name}` is the name of the sequencing run *and* directory.
 
 The alignment pipeline scripts found in `/scripts` are shell scripts written as slurm jobs:
 
