@@ -162,7 +162,7 @@ Rscript //fast/groups/ag_sanders/work/tools/mosaicatcher/R/qc.R \
 ##################################################################################################
 printf '\n ### 7. running R script to plot QC metrics  #####\n'
 
-Rscript //fast/groups/ag_sanders/work/projects/benedict/master_scripts/alignment/alignment_qc_exec.R \
+Rscript //fast/groups/ag_sanders/work/projects/benedict/master_scripts/alignment/exec/alignment_qc_exec.R \
 	$project_name \
 	$n_threads
 
