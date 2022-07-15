@@ -24,7 +24,7 @@ printf '\n ### 1. Setting global options ####\n'
 # Needs changing these for each new project:
 project_name=FOO # the name of the folder in //fast/groups/ag_sanders/work/data containig the reads (which should contain a dir named fastq/)
 memperthread=4G # memory assigned per thread in slurm job
-mate1_suffix=_1_sequence.txt.gz # suffix of read pair mate 1 fastq file
+mate1_suffix=_1_sequence.txt.gz # suffix of read pair mate 1 fastq file (e.g. _R1.fastq.gz)
 run_qc=TRUE # whether the alignment QC script should be run automatically [TRUE/FALSE]
 
 # Probably don't need changing at the start of a new project:
@@ -76,10 +76,7 @@ echo "Final .bam files will be written to ${bam_dir}"
 # confirm that there are .fastq files in the fastq_dir
 [ ! $(ls ${fastq_dir}/*${mate1_suffix} | wc -l) -ge 1 ] && { echo "ERROR: no files were found with the suffix ${mate1_suffix} in ${fastq_dir}" ; exit ; }
 testfile=$(ls $fastq_dir | head -n1)
-if ! compgen -G "${fastq_dir}/*.fastq*" > /dev/null
-then
-	echo 'Warning: fastq files do not have .fastq extension'
-elif [ ! $(zcat ${fastq_dir}/${testfile} | cut -c 1) = '@' ]
+if [ ! $(zcat ${fastq_dir}/${testfile} | cut -c 1) = '@' ]
 then
 	echo "Error: No fastq files were found in ${fastq_dir}/, exiting script"
 	exit
@@ -161,17 +158,17 @@ do
         samtools view -@ 4 -h -b ${samdir}/${library}.sam > ${bam_tmpdir}/${library}.bam # convert SAM to BAM
 
         # sort BAM file
-        samtools sort -@ 4 -m $memperthread ${bam_tmpdir}/${library}.bam > ${bam_tmpdir}/${library}.sorted.bam
-        samtools index -@ 4 ${bam_tmpdir}/${library}.sorted.bam # generate index
+        samtools sort -@ 4 -m $memperthread ${bam_tmpdir}/${library}.bam > ${bam_tmpdir}/${library}.sort.bam
+        samtools index -@ 4 ${bam_tmpdir}/${library}.sort.bam # generate index
 
         # Mark duplicated reads in BAM file
-        picard MarkDuplicates -I ${bam_tmpdir}/${library}.sorted.bam \
-                -O ${bam_tmpdir}/${library}.sorted.mdup.bam \
+        picard MarkDuplicates -I ${bam_tmpdir}/${library}.sort.bam \
+                -O ${bam_tmpdir}/${library}.sort.mdup.bam \
                 -M ${mdup_metrics_dir}/${library}_mdup_metrics.txt
-        samtools index -@ 4 ${bam_tmpdir}/${library}.sorted.mdup.bam # generate index
+        samtools index -@ 4 ${bam_tmpdir}/${library}.sort.mdup.bam # generate index
 
 	# copy sorted marked duplicates BAM files and their indexes to work drive
-	cp ${bam_tmpdir}/${library}.sorted.mdup.bam* $bam_dir
+	cp ${bam_tmpdir}/${library}.sort.mdup.bam* $bam_dir
 	) &
         if [[ $(jobs -r -p | wc -l) -ge $n_threads_divided ]]; # allows n_threads / 4 number of iterations to be executed in parallel
         then
