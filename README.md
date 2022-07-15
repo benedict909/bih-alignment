@@ -24,6 +24,7 @@ And install the required conda environment into your BIH cluster conda workspace
 ```
 conda env create -f //fast/groups/ag_sanders/work/tools/conda_envs/alignmentenv_20220505.yml
 ```
+Or by downloading the same .yml from this repo.
 
 ## Configuration
 
