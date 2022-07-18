@@ -128,14 +128,13 @@ for library in $libraries; do
 		mean_insert=$(zcat ${insert_samps_dir}/${library}_insertsizes.txt.gz | head -n8 | tail -n1 | awk '{print $6}')
     	[ -z "$mean_insert" ] && mean_insert="NA"
 
-
         # save output to file
     	echo $library $gc_content $n_reads $n_reads_mapped $mean_insert | tr " " "\t" >> ${statsdir}/all_samples_qc_metrics.txt
 	) &
 	if [[ $(jobs -r -p | wc -l) -ge $n_threads_divided ]]; # allows n_threads number of jobs to be executed in parallel
-       	then
-	       	wait -n
-       	fi
+   	then
+       	wait -n
+   	fi
 done
 wait # wait for all jobs in the above loop to be done
 
