@@ -110,22 +110,27 @@ for library in $libraries; do
 		bamfile=${bam_dir}/${library}.${sortorsorted}.mdup.bam
 
 		# no. of GC bases in BAM file
-        	gc_ln=$(samtools view -@ 4 $bamfile | awk -F'\t' '{print $10}' | tr -d '\n' | grep -E -o "G|C" | wc -l)
-	        # total no. of bases in BAM file
-        	all_ln=$(samtools view -@ 4 $bamfile | awk -F'\t' '{print $10}' | tr "\n" " " | sed 's/\s\+//g' | wc -m)
-	        # GC content calc
-        	gc_content=$(echo $gc_ln / $all_ln | bc -l)
+    	gc_ln=$(samtools view -@ 4 $bamfile | awk -F'\t' '{print $10}' | tr -d '\n' | grep -E -o "G|C" | wc -l)
+        # total no. of bases in BAM file
+    	all_ln=$(samtools view -@ 4 $bamfile | awk -F'\t' '{print $10}' | tr "\n" " " | sed 's/\s\+//g' | wc -m)
+        # GC content calc
+    	gc_content=$(echo $gc_ln / $all_ln | bc -l)
+    	[ -z "$gc_content" ] && gc_content="NA"
 
-	        # No. of reads in BAM
-        	n_reads=$(samtools view -@ 4 $bamfile | wc -l)
+        # No. of reads in BAM
+    	n_reads=$(samtools view -@ 4 $bamfile | wc -l)
+    	[ -z "$n_reads" ] && n_reads="NA"
 		# No. of reads mapped to primary 24 chromosomes
 		n_reads_mapped=$(head -n24 ${idxstats_dir}/${library}_idxstats.txt | awk '{print $3}' | paste -sd+ | bc)
+    	[ -z "$n_reads_mapped" ] && n_reads_mapped="NA"
 
 		# mean insert size
 		mean_insert=$(zcat ${insert_samps_dir}/${library}_insertsizes.txt.gz | head -n8 | tail -n1 | awk '{print $6}')
+    	[ -z "$mean_insert" ] && mean_insert="NA"
 
-	        # save output to file
-        	echo $library $gc_content $n_reads $n_reads_mapped $mean_insert | tr " " "\t" >> ${statsdir}/all_samples_qc_metrics.txt
+
+        # save output to file
+    	echo $library $gc_content $n_reads $n_reads_mapped $mean_insert | tr " " "\t" >> ${statsdir}/all_samples_qc_metrics.txt
 	) &
 	if [[ $(jobs -r -p | wc -l) -ge $n_threads_divided ]]; # allows n_threads number of jobs to be executed in parallel
        	then
