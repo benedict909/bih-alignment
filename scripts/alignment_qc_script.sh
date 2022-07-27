@@ -3,7 +3,8 @@
 #SBATCH --job-name=aln_qc
 #SBATCH --output=//fast/groups/ag_sanders/work/projects/benedict/logs/202206 .txt
 #
-#SBATCH --ntasks=64
+#SBATCH --cpus-per-task=64
+#SBATCH --ntasks=1
 #SBATCH --nodes=1
 #SBATCH --partition=highmem
 #SBATCH --exclusive
