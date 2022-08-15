@@ -165,7 +165,8 @@ do
         # Mark duplicated reads in BAM file
         picard MarkDuplicates -I ${bam_tmpdir}/${library}.sort.bam \
                 -O ${bam_tmpdir}/${library}.sort.mdup.bam \
-                -M ${mdup_metrics_dir}/${library}_mdup_metrics.txt
+                -M ${mdup_metrics_dir}/${library}_mdup_metrics.txt \ 
+		--QUIET true --VERBOSITY ERROR
         samtools index -@ 4 ${bam_tmpdir}/${library}.sort.mdup.bam # generate index
 
 	# copy sorted marked duplicates BAM files and their indexes to work drive
