@@ -3,11 +3,11 @@
 #SBATCH --job-name=aln
 #SBATCH --output=//fast/groups/ag_sanders/work/projects/benedict/logs/2022
 #
-#SBATCH --cpus-per-task=64
+#SBATCH --cpus-per-task=80
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
 #SBATCH --time=2-00:00
-#SBATCH --mem-per-cpu=4G
+#SBATCH --mem-per-cpu=3G
 #SBATCH --exclusive
 #SBATCH --partition=highmem
 #SBATCH --mail-type=ALL
@@ -23,9 +23,9 @@ echo 'Running alignment script' ; date
 printf '\n ### 1. Setting global options ####\n'
 
 # Needs changing these for each new project:
-project_name=FOO # the name of the folder in //fast/groups/ag_sanders/work/data containig the reads (which should contain a dir named fastq/)
-memperthread=4G # memory assigned per thread in slurm job
-mate1_suffix=_1_sequence.txt.gz # suffix of read pair mate 1 fastq file (e.g. _R1.fastq.gz)
+project_name=$1 # the name of the folder in //fast/groups/ag_sanders/work/data containig the reads (which should contain a dir named fastq/)
+memperthread=3G # memory assigned per thread in slurm job
+mate1_suffix=_R1.fastq.gz # suffix of read pair mate 1 fastq file (e.g. _R1.fastq.gz)
 run_qc=TRUE # whether the alignment QC script should be run automatically [TRUE/FALSE]
 
 # Probably don't need changing at the start of a new project:
