@@ -32,11 +32,11 @@ Once the repo is cloned you can launch the complete alignment and QC pipeline li
 ```
 sbatch \
   -J alignment \
-  -o /fast/work/groups/ag_sanders/projects/benedict/logs/$(date +%Y%m%d)_alignment.txt \
+  -o /fast/work/groups/ag_sanders/projects/${USER}/logs/$(date +%Y%m%d)_alignment.txt \
   bih-alignment/scripts/alignment_script.sh \
   $project_name
 ```
-Where `$project_name` is the the name of the directory in `/fast/groups/ag_sanders/work/data` containing the reads (which should contain a dir named `fastq/` with the read files).
+Where `$project_name` is the the name of the directory in `/fast/groups/ag_sanders/work/data` containing the reads, which should contain a dir named `fastq/` with the read files (e.g. set to `P1593` to align reads in `/fast/groups/ag_sanders/work/data/P1593/fastq`). 
 
 
 ## Configuration (Optional)
