@@ -26,9 +26,22 @@ conda env create -f //fast/groups/ag_sanders/work/tools/conda_envs/alignmentenv_
 ```
 Or by downloading the same .yml from this repo.
 
-## Configuration
+## Usage 
 
-The following parameters need setting in the global options section in `scripts/alignment_scripts.sh` at the start of each new project:
+Once the repo is cloned you can launch the complete alignment and QC pipeline like so:
+```
+sbatch \
+  -J alignment \
+  -o /fast/work/groups/ag_sanders/projects/benedict/logs/$(date +%Y%m%d)_alignment.txt \
+  bih-alignment/scripts/alignment_script.sh \
+  $project_name
+```
+Where `$project_name` is the the name of the directory in `/fast/groups/ag_sanders/work/data` containing the reads (which should contain a dir named `fastq/` with the read files).
+
+
+## Configuration (Optional)
+
+The following parameters can be changed in the global options section in `scripts/alignment_scripts.sh` at the start of each new project:
 
 * `project_name`: the name of the folder in `//fast/groups/ag_sanders/work/data` containing the reads (which should contain a dir named fastq/)
 
@@ -38,4 +51,4 @@ The following parameters need setting in the global options section in `scripts/
 
 * `run_qc`: whether the alignment QC script should be run automatically after alignment is complete [TRUE/FALSE] (default = TRUE)
 
-With these 4 parameters set you should be able to run the pipeline. Further information on each step of the pipeline can be found in the comments of each script.
+With these 4 parameters set correctly you should be able to run the pipeline. Further information on each step of the pipeline can be found in the comments of each script.
