@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #SBATCH --job-name=aln
-#SBATCH --output=//fast/groups/ag_sanders/work/projects/benedict/logs/2022
+#SBATCH --output=//fast/groups/ag_sanders/work/projects/benedict/logs/tmp_aln_log.txt
 #
 #SBATCH --cpus-per-task=80
 #SBATCH --ntasks=1
@@ -191,3 +191,15 @@ then
 	bash //fast/groups/ag_sanders/work/projects/benedict/master_scripts/alignment/exec/alignment_qc_exec.sh \
 		$project_name
 fi
+
+# move log
+for x in {a..z}
+do
+       	log_name=/fast/work/groups/ag_sanders/projects/benedict/logs/$(date +%Y%m%d)_variant_calling_{x}.txt
+       	if [ ! -f "$log_name" ] ; then
+               	break
+       	fi
+done
+mv /fast/work/groups/ag_sanders/projects/benedict/logs/tmp_aln_log.txt \
+       	$log_name
+
