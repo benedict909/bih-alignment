@@ -195,7 +195,7 @@ fi
 # move log
 for x in {a..z}
 do
-       	log_name=/fast/work/groups/ag_sanders/projects/benedict/logs/$(date +%Y%m%d)_$(project_name}_variant_calling_{x}.txt
+       	log_name=/fast/work/groups/ag_sanders/projects/benedict/logs/$(date +%Y%m%d){x}_$(project_name}_variant_calling.txt
        	if [ ! -f "$log_name" ] ; then
                	break
        	fi
