@@ -33,6 +33,7 @@ Once the repo is cloned you can launch the complete alignment and QC pipeline li
 sbatch \
   -J alignment \
   -o /fast/work/groups/ag_sanders/projects/benedict/logs/$(date +%Y%m%d)_alignment.txt \
+  --mail-user=benedict.monteiro@mdc-berlin.de \
   bih-alignment/scripts/alignment_script.sh \
   $project_name
 ```
