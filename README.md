@@ -1,15 +1,6 @@
 # bih-alignment
 
-Scripts for performing alignment of NGS reads to a reference genome on the BIH HPC cluster. 
-The pipeline takes the input fastq files in the following location on the BIH cluster: `//fast/groups/ag_sanders/work/data/${project_name}/fastq`, where `${project_name}` is the name of the sequencing run *and* directory.
-
-The alignment pipeline scripts found in `/scripts` are shell scripts written as slurm jobs:
-
-* `alignment_script.sh` is the complete pipeline and is therefore the recommended script to use.
-
-* `alignment_qc_script.sh` can be run if you only wish to run quality control on data that is already aligned.
-
-The files in `/exec` are called by the main scripts and should not be executed in isolation.  
+Scripts for performing alignment of NGS reads to the hg38 reference genome using BWA-MEM on the BIH HPC cluster. 
 
 ## Installation
 
@@ -32,12 +23,18 @@ Once the repo is cloned you can launch the complete alignment and QC pipeline li
 ```
 sbatch \
   -J alignment \
-  -o /fast/work/groups/ag_sanders/projects/benedict/logs/$(date +%Y%m%d)_alignment.txt \
-  --mail-user=benedict.monteiro@mdc-berlin.de \
+  -o /fast/work/groups/ag_sanders/projects/${myname}/logs/$(date +%Y%m%d)_${project_name}_alignment.txt \
+  --mail-user=${myemail} \
   bih-alignment/scripts/alignment_script.sh \
   $project_name
 ```
 Where `$project_name` is the the name of the directory in `/fast/groups/ag_sanders/work/data` containing the reads, which should contain a dir named `fastq/` with the read files (e.g. set to `P1593` to align reads in `/fast/groups/ag_sanders/work/data/P1593/fastq`). 
+
+* `alignment_script.sh` is the complete pipeline and is therefore the recommended script to use.
+
+* `alignment_qc_script.sh` can be run if you only wish to run quality control on data that is already aligned.
+
+The files in `/exec` are called by the main scripts and should not be executed in isolation.  
 
 
 ## Configuration (Optional)
