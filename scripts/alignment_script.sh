@@ -1,8 +1,5 @@
 #!/bin/bash
 #
-#SBATCH --job-name=aln
-#SBATCH --output=//fast/groups/ag_sanders/work/projects/benedict/logs/tmp_aln_log.txt
-#
 #SBATCH --cpus-per-task=80
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
@@ -11,7 +8,6 @@
 #SBATCH --exclusive
 #SBATCH --partition=highmem
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=benedict.monteiro@mdc-berlin.de
 
 # BIH cluster Paired end sequencing data alignment script June 2022
 # This script takes .fastq format files, performs QC on them, before aligning to reference genome and outputting alignment QC metrics
