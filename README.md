@@ -41,7 +41,7 @@ The files in `/exec` are called by the main scripts and should not be executed i
 
 The following parameters can be changed in the global options section in `scripts/alignment_scripts.sh` at the start of each new project:
 
-* `project_name`: the name of the folder in `//fast/groups/ag_sanders/work/data` containing the reads (which should contain a dir named fastq/)
+* `project_name`: the name of the folder in `//fast/groups/ag_sanders/work/data` containing the reads (which should contain a dir named fastq/). Defaults to command line argument 1.
 
 * `memperthread` the memory assigned per thread in slurm job (recommended 2-4G)
 
