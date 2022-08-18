@@ -57,7 +57,7 @@ printf '\n ### 3. Initiating script #####\n'
 if [[ ! -d /fast/groups/ag_sanders/work/data/${project_name} ]]
 then
 	echo "ERROR: this dir does not exist: /fast/groups/ag_sanders/work/data/${project_name}"
-	echo "please set project_name in global options to a real directory!"
+	echo "please set command line option 1 as a real directory!"
 	exit
 fi
 
