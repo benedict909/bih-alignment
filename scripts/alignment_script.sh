@@ -66,7 +66,7 @@ then
 fi
 
 # create directories
-tmp_dir=//fast/groups/ag_sanders/scratch/${project_name} ; mkdir -m 775 $tmp_dir
+tmp_dir=//fast/groups/ag_sanders/scratch/sequencing_tmp/${project_name} ; mkdir -p -m 775 $tmp_dir
 bam_dir=//fast/groups/ag_sanders/work/data/${project_name}/bam; mkdir -m 775 $bam_dir
 qc_dir=//fast/groups/ag_sanders/work/data/${project_name}/qc ; mkdir -m 775 $qc_dir
 statsdir=${qc_dir}/alignment_stats ; mkdir -m 775 $statsdir
