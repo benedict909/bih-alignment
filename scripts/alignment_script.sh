@@ -145,6 +145,7 @@ printf '\n ### 6. Processing BAM files #####\n'
 # make dir on scratch drive for intermediate bam files
 bam_tmpdir=${tmp_dir}/bam_tmpdir ; mkdir -m 775 $bam_tmpdir
 mdup_metrics_dir=${statsdir}/mdup_metrics ; mkdir -m 775 $mdup_metrics_dir
+mdup_tmpdir=${tmp_dir}/mdup_tmp ; mkdir -m 775 $mdup_tmpdir
 
 # convert, process, filter SAM files
 for library in $libraries
@@ -162,7 +163,7 @@ do
         picard MarkDuplicates -I ${bam_tmpdir}/${library}.sort.bam \
                 -O ${bam_tmpdir}/${library}.sort.mdup.bam \
                 -M ${mdup_metrics_dir}/${library}_mdup_metrics.txt \ 
-		--QUIET true --VERBOSITY ERROR
+		--QUIET true --VERBOSITY ERROR --TMP_DIR ${mdup_tmpdir}
         samtools index -@ 4 ${bam_tmpdir}/${library}.sort.mdup.bam # generate index
 
 	# copy sorted marked duplicates BAM files and their indexes to work drive
