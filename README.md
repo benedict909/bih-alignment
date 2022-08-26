@@ -45,7 +45,7 @@ The following parameters can be changed in the global options section in `script
 
 * `memperthread` the memory assigned per thread in slurm job (recommended 2-4G)
 
-* `mate1_suffix`: the suffix of read pair mate 1 fastq file (e.g. `_1_sequence.txt.gz`)
+* `mate1_suffix`: the suffix of read pair mate 1 fastq file (e.g. `_R1.fastq.gz`)
 
 * `run_qc`: whether the alignment QC script should be run automatically after alignment is complete [TRUE/FALSE] (default = TRUE)
 
