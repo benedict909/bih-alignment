@@ -46,6 +46,31 @@ statsdir=${qc_dir}/alignment_stats ; mkdir -m 775 $statsdir
 sortedwc=$(ls $bam_dir | grep 'sorted' | wc -l)
 [ $sortedwc = 0 ] && sortorsorted=sort || sortorsorted=sorted
 
+
+##################################################################################################
+# 4. running mosaicatcher to calc background & plot Strand-Seq overviews
+##################################################################################################
+printf '\n ### 4. Running mosaicatcher  #####\n'
+
+moscatchdir=${qc_dir}/mosaicatcher ; mkdir -m 775 $moscatchdir
+
+# Run mosaicatcher in singularity
+echo 'launching singulairty from docker://smei/mosaicatcher-pipeline-rpe1-chr3'
+#//fast/groups/ag_sanders/work/tools/mosaicatcher/build/mosaic count \ # only works if you have mosaic working in your environment (singularity is far easier)
+singularity exec --bind /fast docker://smei/mosaicatcher-pipeline-rpe1-chr3 \
+	mosaic count \
+	-o ${moscatchdir}/counts.txt.gz -i ${moscatchdir}/counts.info \
+        -x //fast/work/groups/ag_sanders/data/reference/exclude/GRCh38_full_analysis_set_plus_decoy_hla.exclude \
+        -w 200000 $(ls ${bam_dir}/*.bam)
+
+# run R script to generate mosaicatcher plots
+echo 'running mosaicather R script'
+Rscript //fast/groups/ag_sanders/work/tools/mosaicatcher/R/qc.R \
+	${moscatchdir}/counts.txt.gz \
+    	${moscatchdir}/counts.info \
+    	${moscatchdir}/counts.pdf
+	
+
 ##################################################################################################
 # 4. Generate alignment stats
 ##################################################################################################
@@ -137,29 +162,6 @@ for library in $libraries; do
    	fi
 done
 wait # wait for all jobs in the above loop to be done
-
-##################################################################################################
-# 6. running mosaicatcher to calc background & plot Strand-Seq overviews
-##################################################################################################
-printf '\n ### 6. Running mosaicatcher  #####\n'
-
-moscatchdir=${qc_dir}/mosaicatcher ; mkdir -m 775 $moscatchdir
-
-# Run mosaicatcher in singularity
-echo 'launching singulairty from docker://smei/mosaicatcher-pipeline-rpe1-chr3'
-#//fast/groups/ag_sanders/work/tools/mosaicatcher/build/mosaic count \ # only works if you have mosaic working in your environment (singularity is far easier)
-singularity exec --bind /fast docker://smei/mosaicatcher-pipeline-rpe1-chr3 \
-	mosaic count \
-	-o ${moscatchdir}/counts.txt.gz -i ${moscatchdir}/counts.info \
-        -x //fast/work/groups/ag_sanders/data/reference/exclude/GRCh38_full_analysis_set_plus_decoy_hla.exclude \
-        -w 200000 $(ls ${bam_dir}/*.bam)
-
-# run R script to generate mosaicatcher plots
-echo 'running mosaicather R script'
-Rscript //fast/groups/ag_sanders/work/tools/mosaicatcher/R/qc.R \
-	${moscatchdir}/counts.txt.gz \
-    	${moscatchdir}/counts.info \
-    	${moscatchdir}/counts.pdf
 
 ##################################################################################################
 # 7. running R script to plot QC metrics
