@@ -69,12 +69,12 @@ Rscript //fast/groups/ag_sanders/work/tools/mosaicatcher/R/qc.R \
 	${moscatchdir}/counts.txt.gz \
     	${moscatchdir}/counts.info \
     	${moscatchdir}/counts.pdf
-	
+
 
 ##################################################################################################
-# 4. Generate alignment stats
+# 5. Generate alignment stats
 ##################################################################################################
-printf '\n ### 4. Generate alignement stats #####\n'
+printf '\n ### 5. Generate alignement stats #####\n'
 
 flagstats_dir=${statsdir}/flagstats ; mkdir -m 775 $flagstats_dir
 idxstats_dir=${statsdir}/idxstats ; mkdir -m 775 $idxstats_dir
@@ -132,9 +132,9 @@ echo 'library gc_content n_reads n_reads_mapped mean_insert_size' | tr " " "\t" 
 
 for library in $libraries; do
 	(
-		bamfile=${bam_dir}/${library}.${sortorsorted}.mdup.bam
+	bamfile=${bam_dir}/${library}.${sortorsorted}.mdup.bam
 
-		# no. of GC bases in BAM file
+	# no. of GC bases in BAM file
     	gc_ln=$(samtools view -@ 4 $bamfile | awk -F'\t' '{print $10}' | tr -d '\n' | grep -E -o "G|C" | wc -l)
         # total no. of bases in BAM file
     	all_ln=$(samtools view -@ 4 $bamfile | awk -F'\t' '{print $10}' | tr "\n" " " | sed 's/\s\+//g' | wc -m)
