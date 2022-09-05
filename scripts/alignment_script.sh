@@ -63,14 +63,20 @@ then
 fi
 
 # test if slurm job was submitted from repo cloned from github
+submit_dir_ls=$(ls $SLURM_SUBMIT_DIR | tr ' ' '\n' | grep 'bih-alignment' | wc -w)
 
-if [[ ! ${SLURM_SUBMIT_DIR} =  ]]
+if [[ ${submit_dir_ls} = 0 ]]
 then
-    echo "ERROR: this dir does not exist: /fast/groups/ag_sanders/work/data/${project_name}"
-    echo "please set command line option 1 as a real directory!"
+    echo "ERROR: the 'bih-alignment' directory could not be found in ${SLURM_SUBMIT_DIR}"
+    echo "Please clone the github repo then submit the slurm job like this: 'sbatch bih-alignment/scripts/alignment_script.sh'"
     exit
 fi
-
+if [[ ! -d ${SLURM_SUBMIT_DIR}/bih-alignment/exec ]]
+then
+    echo "ERROR: the 'exec' directory could not be found in ${SLURM_SUBMIT_DIR}/bih-alignment/"
+    echo "Do not alter the directory structure as it means exec scripts cannot be found"
+    exit
+fi
 # create directories
 tmp_dir=//fast/groups/ag_sanders/scratch/sequencing_tmp/${project_name} ; mkdir -p -m 775 $tmp_dir
 bam_dir=//fast/groups/ag_sanders/work/data/${project_name}/bam; mkdir -m 775 $bam_dir
@@ -196,7 +202,7 @@ wait # wait for all jobs in the above loop to be done
 chmod -R 774 $bam_dir
 chmod -R 774 $qc_dir
 
-echo "Finished alignment script on ${project_name}!" ; date
+echo "Finished aligning ${project_name}" ; date
 
 ##################################################################################################
 # 6. Launch QC script
@@ -204,10 +210,13 @@ echo "Finished alignment script on ${project_name}!" ; date
 
 if [ $run_qc = 'TRUE' ]
 then
-	echo "launching QC script ${SLURM_SUBMIT_DIR}/exec/alignment_qc_exec.sh"
-	bash ${SLURM_SUBMIT_DIR}/exec/alignment_qc_exec.sh \
+	echo "launching QC script ${SLURM_SUBMIT_DIR}/bih-alignment/exec/alignment_qc_exec.sh"
+	bash ${SLURM_SUBMIT_DIR}/bih-alignment/exec/alignment_qc_exec.sh \
 		$project_name
 fi
+
+echo "Finished aligning and QC on ${project_name}!" ; date
+
 
 # # move log
 # for x in {a..z}

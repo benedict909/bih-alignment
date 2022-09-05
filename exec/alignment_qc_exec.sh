@@ -48,7 +48,7 @@ sortedwc=$(ls $bam_dir | grep 'sorted' | wc -l)
 
 
 ##################################################################################################
-# 4. running mosaicatcher to calc background & plot Strand-Seq overviews
+# 4. Run mosaicatcher to calc background & plot Strand-Seq overviews
 ##################################################################################################
 printf '\n ### 4. Running mosaicatcher  #####\n'
 
@@ -60,15 +60,15 @@ echo 'launching singulairty from docker://smei/mosaicatcher-pipeline-rpe1-chr3'
 singularity exec --bind /fast docker://smei/mosaicatcher-pipeline-rpe1-chr3 \
 	mosaic count \
 	-o ${moscatchdir}/counts.txt.gz -i ${moscatchdir}/counts.info \
-        -x //fast/work/groups/ag_sanders/data/reference/exclude/GRCh38_full_analysis_set_plus_decoy_hla.exclude \
-        -w 200000 $(ls ${bam_dir}/*.bam)
+    -x //fast/work/groups/ag_sanders/data/reference/exclude/GRCh38_full_analysis_set_plus_decoy_hla.exclude \
+    -w 200000 $(ls ${bam_dir}/*.bam)
 
 # run R script to generate mosaicatcher plots
 echo 'running mosaicather R script'
-Rscript //fast/groups/ag_sanders/work/tools/mosaicatcher/R/qc.R \
+Rscript ${SLURM_SUBMIT_DIR}/bih-alignment/exec/mosaicatcher_qc.R \
 	${moscatchdir}/counts.txt.gz \
-    	${moscatchdir}/counts.info \
-    	${moscatchdir}/counts.pdf
+	${moscatchdir}/counts.info \
+	${moscatchdir}/counts.pdf
 
 
 ##################################################################################################
@@ -88,30 +88,30 @@ libraries=$(ls ${bam_dir}/*bam | sed 's/'.${sortorsorted}.mdup.bam'//g' | sed 's
 
 for library in $libraries; do
 	(
-        	echo Generating alignment statistics on ${library}
+	echo Generating alignment statistics on ${library}
 
-        	bamfile=${bam_dir}/${library}.${sortorsorted}.mdup.bam
+	bamfile=${bam_dir}/${library}.${sortorsorted}.mdup.bam
 
-        	# flagstats
-        	samtools flagstats -@ 4 $bamfile > ${flagstats_dir}/${library}_flagstats.txt
+	# flagstats
+	samtools flagstats -@ 4 $bamfile > ${flagstats_dir}/${library}_flagstats.txt
 
-        	# alignment statisitcs per chromosome
-        	samtools idxstats -@ 4 $bamfile > ${idxstats_dir}/${library}_idxstats.txt
+	# alignment statisitcs per chromosome
+	samtools idxstats -@ 4 $bamfile > ${idxstats_dir}/${library}_idxstats.txt
 
-        	# depth stats per 200kb bin
-        	bedtools coverage -mean \
-                	-a //fast/groups/ag_sanders/work/data/reference/bedfiles/hg38_bedfile_200kb_intervals.bed \
-                	-b $bamfile > ${binneddp_dir}/${library}_mean_depth_200kb_bin.txt
+	# depth stats per 200kb bin
+	# bedtools coverage -mean \
+ #        -a //fast/groups/ag_sanders/work/data/reference/bedfiles/hg38_bedfile_200kb_intervals.bed \
+ #        -b $bamfile > ${binneddp_dir}/${library}_mean_depth_200kb_bin.txt
 
-        	# depth stats per chromo
-        	bedtools coverage -mean \
-                	-a //fast/groups/ag_sanders/work/data/reference/bedfiles/hg38_chromosome_lengths.bed \
-                	-b $bamfile > ${bychromdp_dir}/${library}_mean_depth_bychrom.txt
+	# depth stats per chromo
+	bedtools coverage -mean \
+        -a //fast/groups/ag_sanders/work/data/reference/bedfiles/hg38_chromosome_lengths.bed \
+        -b $bamfile > ${bychromdp_dir}/${library}_mean_depth_bychrom.txt
 
-		# insert sizes
-		picard CollectInsertSizeMetrics -I $bamfile -O ${insert_samps_dir}/${library}_insertsizes.txt \
-			-H ${insert_hist_dir}/${library}_insertsizes.pdf \
-			--QUIET true --VERBOSITY ERROR # makes log easier to read
+    # insert sizes
+    picard CollectInsertSizeMetrics -I $bamfile -O ${insert_samps_dir}/${library}_insertsizes.txt \
+	   -H ${insert_hist_dir}/${library}_insertsizes.pdf \
+	   --QUIET true --VERBOSITY ERROR # makes log easier to read
 	) &
 	if [[ $(jobs -r -p | wc -l) -ge $n_threads_divided ]]; # allows n_threads number of jobs to be executed in parallel
 	then
@@ -135,26 +135,26 @@ for library in $libraries; do
 	bamfile=${bam_dir}/${library}.${sortorsorted}.mdup.bam
 
 	# no. of GC bases in BAM file
-    	gc_ln=$(samtools view -@ 4 $bamfile | awk -F'\t' '{print $10}' | tr -d '\n' | grep -E -o "G|C" | wc -l)
-        # total no. of bases in BAM file
-    	all_ln=$(samtools view -@ 4 $bamfile | awk -F'\t' '{print $10}' | tr "\n" " " | sed 's/\s\+//g' | wc -m)
-        # GC content calc
-    	gc_content=$(echo $gc_ln / $all_ln | bc -l)
-    	[ -z "$gc_content" ] && gc_content="NA"
+	gc_ln=$(samtools view -@ 4 $bamfile | awk -F'\t' '{print $10}' | tr -d '\n' | grep -E -o "G|C" | wc -l)
+    # total no. of bases in BAM file
+	all_ln=$(samtools view -@ 4 $bamfile | awk -F'\t' '{print $10}' | tr "\n" " " | sed 's/\s\+//g' | wc -m)
+    # GC content calc
+	gc_content=$(echo $gc_ln / $all_ln | bc -l)
+	[ -z "$gc_content" ] && gc_content="NA"
 
-        # No. of reads in BAM
-    	n_reads=$(samtools view -@ 4 $bamfile | wc -l)
-    	[ -z "$n_reads" ] && n_reads="NA"
-		# No. of reads mapped to primary 24 chromosomes
-		n_reads_mapped=$(head -n24 ${idxstats_dir}/${library}_idxstats.txt | awk '{print $3}' | paste -sd+ | bc)
-    	[ -z "$n_reads_mapped" ] && n_reads_mapped="NA"
+    # No. of reads in BAM
+	n_reads=$(samtools view -@ 4 $bamfile | wc -l)
+	[ -z "$n_reads" ] && n_reads="NA"
+	# No. of reads mapped to primary 24 chromosomes
+	n_reads_mapped=$(head -n24 ${idxstats_dir}/${library}_idxstats.txt | awk '{print $3}' | paste -sd+ | bc)
+	[ -z "$n_reads_mapped" ] && n_reads_mapped="NA"
 
-		# mean insert size
-		mean_insert=$(zcat ${insert_samps_dir}/${library}_insertsizes.txt.gz | head -n8 | tail -n1 | awk '{print $6}')
-    	[ -z "$mean_insert" ] && mean_insert="NA"
+	# mean insert size
+	mean_insert=$(zcat ${insert_samps_dir}/${library}_insertsizes.txt.gz | head -n8 | tail -n1 | awk '{print $6}')
+	[ -z "$mean_insert" ] && mean_insert="NA"
 
-        # save output to file
-    	echo $library $gc_content $n_reads $n_reads_mapped $mean_insert | tr " " "\t" >> ${statsdir}/all_samples_qc_metrics.txt
+    # save output to file
+	echo $library $gc_content $n_reads $n_reads_mapped $mean_insert | tr " " "\t" >> ${statsdir}/all_samples_qc_metrics.txt
 	) &
 	if [[ $(jobs -r -p | wc -l) -ge $n_threads_divided ]]; # allows n_threads number of jobs to be executed in parallel
    	then
@@ -168,7 +168,7 @@ wait # wait for all jobs in the above loop to be done
 ##################################################################################################
 printf '\n ### 7. running R script to plot QC metrics  #####\n'
 
-Rscript //fast/groups/ag_sanders/work/projects/benedict/master_scripts/alignment/exec/alignment_qc_exec.R \
+Rscript ${SLURM_SUBMIT_DIR}/bih-alignment/exec/alignment_qc_exec.R \
 	$project_name \
 	$n_threads
 
