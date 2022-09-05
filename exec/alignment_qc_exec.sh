@@ -70,6 +70,7 @@ Rscript ${SLURM_SUBMIT_DIR}/bih-alignment/exec/mosaicatcher_qc.R \
 	${moscatchdir}/counts.info \
 	${moscatchdir}/counts.pdf
 
+echo "mosaicatcher complete, overview Strand-Seq QC plots can be found at: ${moscatchdir}/counts.pdf"
 
 ##################################################################################################
 # 5. Generate alignment stats
