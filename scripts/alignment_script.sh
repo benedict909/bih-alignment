@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
 #SBATCH --time=2-00:00
-#SBATCH --mem-per-cpu=3G
+#SBATCH --mem-per-cpu=2G
 #SBATCH --exclusive
 #SBATCH --partition=highmem
 #SBATCH --mail-type=ALL
@@ -20,7 +20,7 @@ printf '\n ### 1. Setting global options ####\n'
 
 # Needs changing these for each new project:
 project_name=$1 # the name of the folder in //fast/groups/ag_sanders/work/data containig the reads (which should contain a dir named fastq/)
-memperthread=3G # memory assigned per thread in slurm job
+memperthread=2G # memory assigned per thread in slurm job
 mate1_suffix=_R1.fastq.gz # suffix of read pair mate 1 fastq file (e.g. _R1.fastq.gz)
 run_qc=TRUE # whether the alignment QC script should be run automatically [TRUE/FALSE]
 
@@ -30,6 +30,7 @@ ref_genome=//fast/groups/ag_sanders/work/data/reference/genomes/GCA_000001405.15
 fastq_dir=//fast/groups/ag_sanders/work/data/${project_name}/fastq # dir containing fastq format files
 n_threads=$(nproc) # number of threads given to slurm job, for highest efficiency use a multiple of 4 (e.g. 32, 64, etc.)
 n_threads_divided=$(expr $n_threads / 4)
+submit_dir=$SLURM_SUBMIT_DIR
 
 ##################################################################################################
 # 2. Activate conda environment
@@ -41,8 +42,8 @@ printf '\n ### 2. Activating conda environment ####\n'
 
 # test if conda env is present
 condaenvexists=$(conda env list | grep 'alignmentenv' | awk '{print $1}')
-[ -z ${condaenvexists} ] && { echo "ERROR: alignmentenv conda env not found in conda env list" ; exit ; } || echo ''
-[ ${condaenvexists} = "alignmentenv" ] && echo "alignmentenv conda env found in conda env list" || { echo "ERROR: alignmentenv conda env not found in conda env list" ; exit ; }
+[ -z ${condaenvexists} ] && { echo "ERROR: alignmentenv conda env not found in conda env list" ; echo "please install the environment following the instructions in the GitHub README" ; exit ; } || echo 'conda environment found successfully, activating now'
+# [ ${condaenvexists} = "alignmentenv" ] && echo "alignmentenv conda env found in conda env list" || { echo "ERROR: alignmentenv conda env not found in conda env list" ; exit ; }
 
 conda init bash
 source ~/.bashrc
@@ -61,6 +62,15 @@ then
 	exit
 fi
 
+# test if slurm job was submitted from repo cloned from github
+
+if [[ ! ${SLURM_SUBMIT_DIR} =  ]]
+then
+    echo "ERROR: this dir does not exist: /fast/groups/ag_sanders/work/data/${project_name}"
+    echo "please set command line option 1 as a real directory!"
+    exit
+fi
+
 # create directories
 tmp_dir=//fast/groups/ag_sanders/scratch/sequencing_tmp/${project_name} ; mkdir -p -m 775 $tmp_dir
 bam_dir=//fast/groups/ag_sanders/work/data/${project_name}/bam; mkdir -m 775 $bam_dir
@@ -71,11 +81,12 @@ echo "Temporary/intermediate files will be written to ${tmp_dir}"
 echo "Final .bam files will be written to ${bam_dir}"
 
 # confirm that there are .fastq files in the fastq_dir
-[ ! $(ls ${fastq_dir}/*${mate1_suffix} | wc -l) -ge 1 ] && { echo "ERROR: no files were found with the suffix ${mate1_suffix} in ${fastq_dir}" ; exit ; }
+[ ! $(ls ${fastq_dir}/*${mate1_suffix} | wc -l) -ge 1 ] && { echo "ERROR: no files were found with the suffix ${mate1_suffix} in ${fastq_dir}" ; echo "Please change the mate1_suffix manually in ${SLURM_SUBMIT_DIR}/scripts/alignment_script.sh" ; exit ; }
 testfile=$(ls $fastq_dir | head -n1)
 if [ ! $(zcat ${fastq_dir}/${testfile} | cut -c 1) = '@' ]
 then
 	echo "Error: No fastq files were found in ${fastq_dir}/, exiting script"
+    echo "(the first character of the file ${fastq_dir}/${testfile} is not '@', suggesting it is not correct fastq format)"
 	exit
 fi
 
@@ -100,10 +111,14 @@ fastqc_dir=${qc_dir}/fastqc ; mkdir -m 775 $fastqc_dir
 multiqc_dir=${qc_dir}/multiqc ; mkdir -m 775 $multiqc_dir
 
 # run FastQC to generate quality metrics on
+echo "Running FastQC"
 fastqc -q -t $n_threads -o ${fastqc_dir} ${fastq_dir}/*
 
 # run multiqc
+echo "Running MutiQC to combine FastQC results"
 multiqc -o $multiqc_dir $fastqc_dir
+echo "MutiQC results saved to: ${multiqc_dir}"
+
 
 ##################################################################################################
 # 5. Alignment
@@ -122,20 +137,21 @@ for library in $libraries
 do
 	(
 	echo "performing alignment on ${library}"
-        input1=${fastq_dir}/${library}${mate1_suffix}
-        input2=${fastq_dir}/${library}${mate2_suffix}
+    input1=${fastq_dir}/${library}${mate1_suffix}
+    input2=${fastq_dir}/${library}${mate2_suffix}
 
-        ID=$(zcat $input1 | head -n1 |  cut -f 1-3 -d ":" | cut -f 1 -d '.' | sed 's/@//')
-
-        bwa mem -t 4 -v 1 -R $(echo "@RG\tID:${library}\tSM:${project_name}") \
-        	$ref_genome $input1 $input2 > ${samdir}/${library}.sam
+    bwa mem -t 4 -v 1 -R $(echo "@RG\tID:${library}\tSM:${project_name}") \
+    	$ref_genome $input1 $input2 > ${samdir}/${library}.sam
 	) &
-        if [[ $(jobs -r -p | wc -l) -ge $n_threads_divided ]]; # allows n_threads / 4 number of iterations to be executed in parallel
-        then
-                wait -n # if there are n_threads_divided iterations running wait here for space to start next job
-        fi
+    if [[ $(jobs -r -p | wc -l) -ge $n_threads_divided ]]; # allows n_threads / 4 number of iterations to be executed in parallel
+    then
+            wait -n # if there are n_threads_divided iterations running wait here for space to start next job
+    fi
 done
 wait # wait for all jobs in the above loop to be done
+
+echo "Alignment completed, SAM files are saved to: ${samdir}"
+
 
 ##################################################################################################
 # 6. Process BAM files
@@ -150,29 +166,29 @@ mdup_tmpdir=${tmp_dir}/mdup_tmp ; mkdir -m 775 $mdup_tmpdir
 # convert, process, filter SAM files
 for library in $libraries
 do
-        (
+    (
 	echo "processing ${library}.sam"
-        # convert SAM to BAM
-        samtools view -@ 4 -h -b ${samdir}/${library}.sam > ${bam_tmpdir}/${library}.bam # convert SAM to BAM
+    # convert SAM to BAM
+    samtools view -@ 3 -h -b ${samdir}/${library}.sam > ${bam_tmpdir}/${library}.bam # convert SAM to BAM
 
-        # sort BAM file
-        samtools sort -@ 4 -m $memperthread ${bam_tmpdir}/${library}.bam > ${bam_tmpdir}/${library}.sort.bam
-        samtools index -@ 4 ${bam_tmpdir}/${library}.sort.bam # generate index
+    # sort BAM file
+    samtools sort -@ 3 -m $memperthread ${bam_tmpdir}/${library}.bam > ${bam_tmpdir}/${library}.sort.bam
+    samtools index -@ 3 ${bam_tmpdir}/${library}.sort.bam # generate index
 
-        # Mark duplicated reads in BAM file
-        picard MarkDuplicates -I ${bam_tmpdir}/${library}.sort.bam \
-                -O ${bam_tmpdir}/${library}.sort.mdup.bam \
-                -M ${mdup_metrics_dir}/${library}_mdup_metrics.txt \ 
-		--QUIET true --VERBOSITY ERROR --TMP_DIR ${mdup_tmpdir}
-        samtools index -@ 4 ${bam_tmpdir}/${library}.sort.mdup.bam # generate index
+    # Mark duplicated reads in BAM file
+    picard MarkDuplicates -I ${bam_tmpdir}/${library}.sort.bam \
+        -O ${bam_tmpdir}/${library}.sort.mdup.bam \
+        -M ${mdup_metrics_dir}/${library}_mdup_metrics.txt \
+        --QUIET true --VERBOSITY ERROR --TMP_DIR ${mdup_tmpdir}
+    samtools index -@ 3 ${bam_tmpdir}/${library}.sort.mdup.bam # generate index
 
 	# copy sorted marked duplicates BAM files and their indexes to work drive
 	cp ${bam_tmpdir}/${library}.sort.mdup.bam* $bam_dir
 	) &
-        if [[ $(jobs -r -p | wc -l) -ge $n_threads_divided ]]; # allows n_threads / 4 number of iterations to be executed in parallel
-        then
-                wait -n # if there are n_threads_divided iterations running wait here for space to start next job
-        fi
+    if [[ $(jobs -r -p | wc -l) -ge $n_threads_divided ]]; # allows n_threads / 4 number of iterations to be executed in parallel
+    then
+            wait -n # if there are n_threads_divided iterations running wait here for space to start next job
+    fi
 done
 wait # wait for all jobs in the above loop to be done
 
@@ -182,21 +198,25 @@ chmod -R 774 $qc_dir
 
 echo "Finished alignment script on ${project_name}!" ; date
 
+##################################################################################################
+# 6. Launch QC script
+##################################################################################################
+
 if [ $run_qc = 'TRUE' ]
 then
-	echo "launching QC script //fast/groups/ag_sanders/work/projects/benedict/master_scripts/alignment/exec/alignment_qc_exec.sh"
-	bash //fast/groups/ag_sanders/work/projects/benedict/master_scripts/alignment/exec/alignment_qc_exec.sh \
+	echo "launching QC script ${SLURM_SUBMIT_DIR}/exec/alignment_qc_exec.sh"
+	bash ${SLURM_SUBMIT_DIR}/exec/alignment_qc_exec.sh \
 		$project_name
 fi
 
-# move log
-for x in {a..z}
-do
-       	log_name=/fast/work/groups/ag_sanders/projects/benedict/logs/$(date +%Y%m%d){x}_$(project_name}_variant_calling.txt
-       	if [ ! -f "$log_name" ] ; then
-               	break
-       	fi
-done
-mv /fast/work/groups/ag_sanders/projects/benedict/logs/tmp_aln_log.txt \
-       	$log_name
+# # move log
+# for x in {a..z}
+# do
+#        	log_name=/fast/work/groups/ag_sanders/projects/benedict/logs/$(date +%Y%m%d){x}_$(project_name}_variant_calling.txt
+#        	if [ ! -f "$log_name" ] ; then
+#                	break
+#        	fi
+# done
+# mv /fast/work/groups/ag_sanders/projects/benedict/logs/tmp_aln_log.txt \
+#        	$log_name
 
