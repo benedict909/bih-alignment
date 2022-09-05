@@ -349,9 +349,9 @@ for(metric in metric_names){
 }
 dev.off()
 
-pdf(file.path(resdir,"qc_metrics_violins.pdf"), width = 5, height = 6)
-for(metric in metric_names){
-    myplot = plot_metric(colname2plot = metric, plot_type = "violin")
-    print(myplot)
-}
-dev.off()
+# pdf(file.path(resdir,"qc_metrics_violins.pdf"), width = 5, height = 6)
+# for(metric in metric_names){
+#     myplot = plot_metric(colname2plot = metric, plot_type = "violin")
+#     print(myplot)
+# }
+# dev.off()
