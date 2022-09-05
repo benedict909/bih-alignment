@@ -10,7 +10,7 @@
 #SBATCH --mail-type=ALL
 
 # BIH cluster Paired end sequencing data alignment script June 2022
-# This script takes .fastq format files, performs QC on them, before aligning to reference genome and outputting alignment QC metrics
+# This script takes .fastq format files, performs QC on them, before aligning to reference genome and outputting alignment QC metrics 
 echo 'Running alignment script' ; date
 
 ##################################################################################################
