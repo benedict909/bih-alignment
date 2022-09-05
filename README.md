@@ -13,7 +13,7 @@ git clone https://github.com/benedict909/bih-alignment
 And install the required conda environment (which has all required packages) into your BIH cluster conda workspace like so:
 
 ```
-conda env create -f bih-alignment/alignmentenv_20220905.yml
+conda env create --force --file bih-alignment/alignmentenv_20220905.yml
 ```
 
 ## Usage 
