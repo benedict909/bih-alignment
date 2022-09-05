@@ -1,6 +1,6 @@
 # bih-alignment
 
-Scripts for performing alignment of NGS reads to the hg38 reference genome using BWA-MEM on the BIH HPC cluster. 
+Scripts for performing alignment of paired-end NGS reads to the hg38 reference genome using BWA-MEM on the BIH HPC cluster. 
 
 ## Installation
 
@@ -10,7 +10,7 @@ You can download this repository like so:
 git clone https://github.com/benedict909/bih-alignment
 ```
 
-And install the required conda environment into your BIH cluster conda workspace like so:
+And install the required conda environment (which has all required packages) into your BIH cluster conda workspace like so:
 
 ```
 conda env create -f bih-alignment/alignmentenv_20220905.yml
@@ -28,6 +28,10 @@ sbatch \
   $project_name
 ```
 Where `$project_name` is the the name of the directory in `/fast/groups/ag_sanders/work/data` containing the reads, which should contain a dir named `fastq/` with the read files (e.g. set to `P1593` to align reads in `/fast/groups/ag_sanders/work/data/P1593/fastq`). 
+
+You can either edit `${myemail}` and `${myname}` manually, or (to make your life easier) add them as an environmental bash variables (e.g. by adding `export myname=benedict` to your `~/.bashrc` file). 
+
+This repo contains the following scripts:
 
 * `alignment_script.sh` is the complete pipeline and is therefore the recommended script to use.
 
